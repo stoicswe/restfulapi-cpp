@@ -1,5 +1,5 @@
 # Ignore configs
-**/CMakeUserPresets.josn
+**/CMakeUserPresets.json
 
 # ignore the build folder
 x64
