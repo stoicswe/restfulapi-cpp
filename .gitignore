@@ -1,0 +1,16 @@
+# Ignore configs
+**/CMakeUserPresets.josn
+
+# ignore the build folder
+x64
+**/build/**
+
+# Ignore Jetbrains Products local files
+.idea
+cmake-build-debug
+cmake-build-release
+
+# Ignore the VS studio local files
+.vs
+*.user
+*.filters
