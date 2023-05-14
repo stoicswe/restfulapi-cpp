@@ -11,6 +11,8 @@ namespace RestfulAPI
 	class HttpStatus
 	{
 	public:
+		HttpStatus()
+		{}
 		HttpStatus(int statusCode, std::string statusMessage)
 			: m_status_code(statusCode), m_status_message(statusMessage)
 		{}
@@ -24,6 +26,8 @@ namespace RestfulAPI
 	class ApiResponse
 	{
 	public:
+		ApiResponse()
+		{}
 		ApiResponse(HttpStatus status)
 			: m_request_status(status)
 		{}
@@ -40,6 +44,28 @@ namespace RestfulAPI
 		std::shared_ptr<std::string> m_header;
 		std::shared_ptr<std::string> m_body;
 	};
+
+	enum HttpOperations {
+		HTTPOPERATION_ERROR = 0,
+		HTTPOPERATION_HEAD = 1,
+		HTTPOPERATION_GET = 2,
+		HTTPOPERATION_PUT = 3
+	};
+
+	static const std::map<std::string, HttpOperations> _HTTP_OPERATION_LABELS({
+		{"head",HTTPOPERATION_HEAD},
+		{"get", HTTPOPERATION_GET},
+		{"put",HTTPOPERATION_PUT}
+		});
+
+	static const HttpOperations GetOperationEnum(std::string httpOperationLabel)
+	{
+		auto it = _HTTP_OPERATION_LABELS.find(httpOperationLabel);
+		if (it != _HTTP_OPERATION_LABELS.end()) {
+			return it->second;
+		}
+		return HTTPOPERATION_ERROR;
+	}
 
 	enum HttpHeader
 	{
@@ -104,7 +130,7 @@ namespace RestfulAPI
 		void SetOption(RestApiOption option, std::string value){ m_client_opts[option] = value; }
 		const ApiResponse Head(const HttpRequest request);
 		const ApiResponse Get(const HttpRequest request);
-		const ApiResponse Put(const HttpRequest request, const std::shared_ptr<char*> data);
+		const ApiResponse Put(const HttpRequest request, const std::shared_ptr<FILE> data, struct stat dataInfo);
 	protected:
 		std::string m_apiEndpoint;
 		std::map<int, std::string> m_client_opts;
