@@ -79,6 +79,9 @@ int main(int argc, char** argv){
 	RestfulAPI::RestApiClient client = RestfulAPI::RestApiClient(baseServiceStr);
 	client.SetOption(RestfulAPI::RESTCLIENTOPT_USER_AGENT, "testRestful/1.0");
 	client.SetOption(RestfulAPI::RESTCLIENTOPT_READ_BODY, "true");
+	client.SetOption(RestfulAPI::RESTCLIENTOPT_FOLLOW_REDIRECT, "true");
+	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER, "true");
+	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST, "true");
 	PLOG(plog::debug) << "executing a head request";
 	RestfulAPI::HttpRequest request = RestfulAPI::HttpRequest("/");
 	request.SetHeader(RestfulAPI::HTTPHEADER_ACCEPTS, "*/*");

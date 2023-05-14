@@ -113,7 +113,10 @@ namespace RestfulAPI
 	{
 		RESTCLIENTOPT_USER_AGENT = 1,
 		RESTCLIENTOPT_READ_HEADERS = 2,
-		RESTCLIENTOPT_READ_BODY = 3
+		RESTCLIENTOPT_READ_BODY = 3,
+		RESTCLIENTOPT_FOLLOW_REDIRECT = 4,
+		RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER = 5,
+		RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST = 6
 	};
 	
 	class RestApiClient
@@ -173,6 +176,27 @@ namespace RestfulAPI
 				RestApiClient::WriteData bodyData = { m_response_body, 0 };
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, &bodyData);
 			}
+
+			std::string follow_redirect = FindOpt(RESTCLIENTOPT_FOLLOW_REDIRECT);
+			if (!follow_redirect.empty() && follow_redirect == "true")
+			{
+				PLOG(plog::debug) << "setting redirect to true";
+				curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1l);
+			}
+
+			std::string ssl_disable_verify_peer = FindOpt(RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER);
+			if (!ssl_disable_verify_peer.empty() && ssl_disable_verify_peer == "true")
+			{
+				PLOG(plog::debug) << "setting redirect to true";
+				curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0l);
+			}
+
+			std::string ssl_disable_verify_host = FindOpt(RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST);
+			if (!ssl_disable_verify_host.empty() && ssl_disable_verify_host == "true")
+			{
+				PLOG(plog::debug) << "setting redirect to true";
+				curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0l);
+			}
 		}
 		void SetHeaders(HttpRequest request)
 		{
@@ -204,10 +228,17 @@ namespace RestfulAPI
 		}
 		size_t BodyCallBack(char* buffer, size_t size, size_t nitems, void* data)
 		{
+			std::cout << "in body callback" << std::endl;
 			size_t numBytes = size * nitems;
+			std::cout << "Byte Syze: " << size << std::endl;
+			std::cout << "nItems: " << nitems << std::endl;
+			std::cout << "Numbytes: " << numBytes << std::endl;
 			WriteData *writeData = (WriteData*) data;
+			std::cout << "Writing data";
 			writeData->data->append(buffer, numBytes);
+			std::cout << "Wrote: " << sizeof writeData->data << std::endl;
 			writeData->pos += numBytes;
+			std::cout << "pos: " << writeData->pos << std::endl;
 			return numBytes;
 		}
 	};
