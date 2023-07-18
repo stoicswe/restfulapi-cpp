@@ -68,34 +68,47 @@ int main(int argc, char** argv){
 		return 1;
 	}
 
+    // Get the type of operation to be executed against the target endpoint
+    auto operationType = RestfulAPI::GetOperationEnum(std::string(operation));
+
 	// init the rest client here and process the url request
 	PLOG(plog::debug) << "building the rest client";
 	RestfulAPI::RestApiClient client = RestfulAPI::RestApiClient(baseServiceStr);
 	client.SetOption(RestfulAPI::RESTCLIENTOPT_USER_AGENT, "testRestful/1.0");
-	client.SetOption(RestfulAPI::RESTCLIENTOPT_READ_BODY, "true");
+    client.SetOption(RestfulAPI::RESTCLIENTOPT_READ_BODY, "true");
 	client.SetOption(RestfulAPI::RESTCLIENTOPT_FOLLOW_REDIRECT, "true");
 	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER, "true");
 	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST, "true");
-	PLOG(plog::debug) << "executing a head request";
 	RestfulAPI::HttpRequest request = RestfulAPI::HttpRequest("/");
 	request.SetHeader(RestfulAPI::HTTPHEADER_ACCEPTS, "*/*");
 
 	RestfulAPI::ApiResponse response;
-	switch (RestfulAPI::GetOperationEnum(std::string(operation)))
+	switch (operationType)
 	{
 	case RestfulAPI::HTTPOPERATION_HEAD:
+        PLOG(plog::debug) << "sending a HEAD request using client";
 		response = client.Head(std::string(targetApi));
 		break;
 	case RestfulAPI::HTTPOPERATION_GET:
+        PLOG(plog::debug) << "sending a GET request using client";
 		response = client.Get(std::string(targetApi));
 		break;
 	case RestfulAPI::HTTPOPERATION_PUT:
+        PLOG(plog::debug) << "sending a PUT request using client";
+        // This will give a warning of uninitialized, ignore, since it is in a CASE
 		struct stat dataInfo;
+
 		stat(fileToUpoad, &dataInfo);
-		sourceFileToUpload = std::make_shared<FILE>(fopen(fileToUpoad, "rb"));
+#ifdef _WIN32
+        FILE* dataFile;
+        fopen_s(&dataFile, fileToUpoad, "rb");
+		sourceFileToUpload = std::make_shared<FILE>(dataFile);
+#elif linux
+        sourceFileToUpload = std::make_shared<FILE>(fopen(fileToUpoad, "rb"));
+#endif
 		response = client.Put(std::string(targetApi), sourceFileToUpload, dataInfo);
 		break;
-	case RestfulAPI::HTTPOPERATION_ERROR:
+	default:
 		PLOG(plog::fatal) << "no operation is implemented. See (-h) for implemented operation details.";
 		return 1;
 	}
@@ -110,13 +123,15 @@ int main(int argc, char** argv){
 	std::shared_ptr<std::string> responseHeaders = response.GetResponseHeaders();
 	if (responseHeaders)
 	{
-		PLOG(plog::info) << "the total response headers size from the rest client is: [" + std::to_string(sizeof(*responseHeaders)) + "]";
+        // Want to print the total bytes, so using sizeof()
+		PLOG(plog::info) << "the total response headers size (in bytes) from the rest client is: [" + std::to_string(sizeof(*responseHeaders)) + "]";
 		PLOG(plog::info) << "the response headers from the rest client is: [" + *responseHeaders + "]";
 	}
 	std::shared_ptr<std::string> responseBody = response.GetResponseBody();
 	if (responseBody) 
 	{
-		PLOG(plog::info) << "the total response body size from the rest client is: [" + std::to_string(sizeof(*responseBody)) + "]";
+        // Want to print the total bytes, so using sizeof()
+		PLOG(plog::info) << "the total response body size (in bytes) from the rest client is: [" + std::to_string(sizeof(*responseBody)) + "]";
 		PLOG(plog::info) << "the response body from the rest client is: [" + *responseBody + "]";
 	}
 
