@@ -34,24 +34,35 @@ int main(int argc, char** argv){
 	plog::get()->addAppender(&consoleAppender);
 
 	char* help = getCmdOption(argv, argv + argc, "-h", true);
+	char* operation = getCmdOption(argv, argv + argc, "-o", false);
 	char* targetApi = getCmdOption(argv, argv + argc, "-u", false);
 	char* baseService = getCmdOption(argv, argv + argc, "-s", false);
+	char* fileToUpoad = getCmdOption(argv, argv + argc, "-f", false);
 
+	std::shared_ptr<FILE> sourceFileToUpload;
 	std::string baseServiceStr = "http://127.0.0.1:8080";
 	if (targetApi) { PLOG(plog::info) << "TargetAPI: " + std::string(targetApi); }
 	if (baseService) { PLOG(plog::info) << "BaseService: " + std::string(baseService); baseServiceStr = std::string(baseService); }
 	if (help) 
 	{ 
-		std::cout 
+		std::cout
 			<< "usage: restfulapi_test [options] -u <target_api>" << std::endl
 			<< "options:" << std::endl
-			<< "-u <api>, required      Pass the api that this program should target" << std::endl
-			<< "-s <server>, optional   The target server that the api is hosted on" << std::endl
+			<< "-o <operation>, required  Pass the operation to perform: [head, get, put]" << std::endl
+			<< "-u <api>, required        Pass the api that this program should target" << std::endl
+			<< "-f <filename>, optional   Pass the name of the file whos contents should be uploaded if using PUT" << std::endl
+			<< "-s <server>, optional     The target server that the api is hosted on" << std::endl
 			;
 		return 0;
 	}
 
-	if (!targetApi) 
+	if (!operation)
+	{
+		PLOG(plog::fatal) << "no operation entered. operation is required. See (-h) for details.";
+		return 1;
+	}
+
+	if (!targetApi)
 	{ 
 		PLOG(plog::fatal) << "no api target entered. api target is required. See (-h) for details."; 
 		return 1;
@@ -62,10 +73,38 @@ int main(int argc, char** argv){
 	RestfulAPI::RestApiClient client = RestfulAPI::RestApiClient(baseServiceStr);
 	client.SetOption(RestfulAPI::RESTCLIENTOPT_USER_AGENT, "testRestful/1.0");
 	client.SetOption(RestfulAPI::RESTCLIENTOPT_READ_BODY, "true");
+	client.SetOption(RestfulAPI::RESTCLIENTOPT_FOLLOW_REDIRECT, "true");
+	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER, "true");
+	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST, "true");
 	PLOG(plog::debug) << "executing a head request";
 	RestfulAPI::HttpRequest request = RestfulAPI::HttpRequest("/");
 	request.SetHeader(RestfulAPI::HTTPHEADER_ACCEPTS, "*/*");
-	RestfulAPI::ApiResponse response = client.Head(std::string(targetApi));
+
+	RestfulAPI::ApiResponse response;
+	switch (RestfulAPI::GetOperationEnum(std::string(operation)))
+	{
+	case RestfulAPI::HTTPOPERATION_HEAD:
+		response = client.Head(std::string(targetApi));
+		break;
+	case RestfulAPI::HTTPOPERATION_GET:
+		response = client.Get(std::string(targetApi));
+		break;
+	case RestfulAPI::HTTPOPERATION_PUT:
+		struct stat dataInfo;
+		stat(fileToUpoad, &dataInfo);
+		sourceFileToUpload = std::make_shared<FILE>(fopen(fileToUpoad, "rb"));
+		response = client.Put(std::string(targetApi), sourceFileToUpload, dataInfo);
+		break;
+	case RestfulAPI::HTTPOPERATION_ERROR:
+		PLOG(plog::fatal) << "no operation is implemented. See (-h) for implemented operation details.";
+		return 1;
+	}
+
+	if (sourceFileToUpload)
+	{
+		fclose(sourceFileToUpload.get());
+	}
+
 	RestfulAPI::HttpStatus httpStatus = response.GetHttpStatus();
 	PLOG(plog::info) << "the http response status is: " + std::to_string(httpStatus.GetHttpStatusCode());
 	std::shared_ptr<std::string> responseHeaders = response.GetResponseHeaders();

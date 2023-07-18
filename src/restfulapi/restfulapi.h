@@ -11,6 +11,8 @@ namespace RestfulAPI
 	class HttpStatus
 	{
 	public:
+		HttpStatus()
+		{}
 		HttpStatus(int statusCode, std::string statusMessage)
 			: m_status_code(statusCode), m_status_message(statusMessage)
 		{}
@@ -24,6 +26,8 @@ namespace RestfulAPI
 	class ApiResponse
 	{
 	public:
+		ApiResponse()
+		{}
 		ApiResponse(HttpStatus status)
 			: m_request_status(status)
 		{}
@@ -40,6 +44,28 @@ namespace RestfulAPI
 		std::shared_ptr<std::string> m_header;
 		std::shared_ptr<std::string> m_body;
 	};
+
+	enum HttpOperations {
+		HTTPOPERATION_ERROR = 0,
+		HTTPOPERATION_HEAD = 1,
+		HTTPOPERATION_GET = 2,
+		HTTPOPERATION_PUT = 3
+	};
+
+	static const std::map<std::string, HttpOperations> _HTTP_OPERATION_LABELS({
+		{"head",HTTPOPERATION_HEAD},
+		{"get", HTTPOPERATION_GET},
+		{"put",HTTPOPERATION_PUT}
+		});
+
+	static const HttpOperations GetOperationEnum(std::string httpOperationLabel)
+	{
+		auto it = _HTTP_OPERATION_LABELS.find(httpOperationLabel);
+		if (it != _HTTP_OPERATION_LABELS.end()) {
+			return it->second;
+		}
+		return HTTPOPERATION_ERROR;
+	}
 
 	enum HttpHeader
 	{
@@ -87,7 +113,10 @@ namespace RestfulAPI
 	{
 		RESTCLIENTOPT_USER_AGENT = 1,
 		RESTCLIENTOPT_READ_HEADERS = 2,
-		RESTCLIENTOPT_READ_BODY = 3
+		RESTCLIENTOPT_READ_BODY = 3,
+		RESTCLIENTOPT_FOLLOW_REDIRECT = 4,
+		RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER = 5,
+		RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST = 6
 	};
 	
 	class RestApiClient
@@ -104,7 +133,7 @@ namespace RestfulAPI
 		void SetOption(RestApiOption option, std::string value){ m_client_opts[option] = value; }
 		const ApiResponse Head(const HttpRequest request);
 		const ApiResponse Get(const HttpRequest request);
-		const ApiResponse Put(const HttpRequest request, const std::shared_ptr<char*> data);
+		const ApiResponse Put(const HttpRequest request, const std::shared_ptr<FILE> data, struct stat dataInfo);
 	protected:
 		std::string m_apiEndpoint;
 		std::map<int, std::string> m_client_opts;
@@ -147,6 +176,27 @@ namespace RestfulAPI
 				RestApiClient::WriteData bodyData = { m_response_body, 0 };
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, &bodyData);
 			}
+
+			std::string follow_redirect = FindOpt(RESTCLIENTOPT_FOLLOW_REDIRECT);
+			if (!follow_redirect.empty() && follow_redirect == "true")
+			{
+				PLOG(plog::debug) << "setting redirect to true";
+				curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1l);
+			}
+
+			std::string ssl_disable_verify_peer = FindOpt(RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER);
+			if (!ssl_disable_verify_peer.empty() && ssl_disable_verify_peer == "true")
+			{
+				PLOG(plog::debug) << "setting redirect to true";
+				curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0l);
+			}
+
+			std::string ssl_disable_verify_host = FindOpt(RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST);
+			if (!ssl_disable_verify_host.empty() && ssl_disable_verify_host == "true")
+			{
+				PLOG(plog::debug) << "setting redirect to true";
+				curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0l);
+			}
 		}
 		void SetHeaders(HttpRequest request)
 		{
@@ -178,10 +228,17 @@ namespace RestfulAPI
 		}
 		size_t BodyCallBack(char* buffer, size_t size, size_t nitems, void* data)
 		{
+			std::cout << "in body callback" << std::endl;
 			size_t numBytes = size * nitems;
+			std::cout << "Byte Syze: " << size << std::endl;
+			std::cout << "nItems: " << nitems << std::endl;
+			std::cout << "Numbytes: " << numBytes << std::endl;
 			WriteData *writeData = (WriteData*) data;
+			std::cout << "Writing data";
 			writeData->data->append(buffer, numBytes);
+			std::cout << "Wrote: " << sizeof writeData->data << std::endl;
 			writeData->pos += numBytes;
+			std::cout << "pos: " << writeData->pos << std::endl;
 			return numBytes;
 		}
 	};
