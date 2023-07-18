@@ -21,7 +21,7 @@ class vsPractice(ConanFile):
     generators = ("cmake_find_package")
     
     def requirements(self):
-        self.requires("libcurl/8.0.1")
+        self.requires("libcurl/8.1.2")
         self.requires("plog/1.1.9")
     
     #def imports(self):

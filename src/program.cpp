@@ -1,28 +1,22 @@
 #include <iostream>
 #include <map>
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
-#include <curl/curl.h>
-
 #include <restfulapi.h>
 
 // Functions for processing the arguments passed to the program as values passed to specific flags
-char* getCmdOption(char** begin, char** end, const std::string& option)
+char* getCmdOption(char** begin, char** end, const std::string& option, bool isFlag)
 {
 	char** itr = std::find(begin, end, option);
-	if (itr != end && ++itr != end)
+	if (isFlag || (itr != end && ++itr != end))
 	{
 		return *itr;
 	}
-	return 0;
+	return nullptr;
 }
 
 bool cmdOptionExists(char** begin, char** end, const std::string& option)
@@ -33,15 +27,15 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option)
 
 int main(int argc, char** argv){
 
-	std::cout << "RestfulApi Test" << std::endl;
+	std::cout << "RestfulApi Test Application" << std::endl;
 
 	plog::init(plog::verbose, "console.log", 10000, 25);
 	plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
 	plog::get()->addAppender(&consoleAppender);
 
-	char* help = getCmdOption(argv, argv + argc, "-h");
-	char* targetApi = getCmdOption(argv, argv + argc, "-u");
-	char* baseService = getCmdOption(argv, argv + argc, "-s");
+	char* help = getCmdOption(argv, argv + argc, "-h", true);
+	char* targetApi = getCmdOption(argv, argv + argc, "-u", false);
+	char* baseService = getCmdOption(argv, argv + argc, "-s", false);
 
 	std::string baseServiceStr = "http://127.0.0.1:8080";
 	if (targetApi) { PLOG(plog::info) << "TargetAPI: " + std::string(targetApi); }
