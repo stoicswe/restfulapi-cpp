@@ -7,6 +7,7 @@
 namespace RestfulAPI
 {
 	const float _VERSION = 0.1;
+    const std::string _DEFAULT_TARGET_ENDPOINT = "http://127.0.0.1:8080";
 
 	class HttpStatus
 	{
@@ -121,20 +122,22 @@ namespace RestfulAPI
 	
 	class RestApiClient
 	{
-
 	public:
-		RestApiClient(const std::string& endpoint)
-			: m_apiEndpoint(endpoint)
-		{}
-		//curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-		RestApiClient(const std::string& endpoint, const std::string& clientOpts)
-		{}
+        static RestApiClient Instance(const std::string& endpoint = _DEFAULT_TARGET_ENDPOINT) {
+            static RestApiClient instance = RestApiClient(endpoint);
+            return instance;
+        }
 		~RestApiClient() { Clean(); }
 		void SetOption(RestApiOption option, std::string value){ m_client_opts[option] = value; }
 		const ApiResponse Head(const HttpRequest request);
 		const ApiResponse Get(const HttpRequest request);
 		const ApiResponse Put(const HttpRequest request, const std::shared_ptr<FILE> data, struct stat dataInfo);
 	protected:
+        RestApiClient(const std::string& endpoint)
+                : m_apiEndpoint(endpoint)
+        {}
+        //curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+        static RestApiClient* self;
 		std::string m_apiEndpoint;
 		std::map<int, std::string> m_client_opts;
 		struct curl_slist* m_header_struct;
@@ -207,7 +210,7 @@ namespace RestfulAPI
 		}
 		std::string FindOpt(const int opt) {
 			std::string optVal = "";
-			std::map<int, std::string>::iterator it = m_client_opts.find(opt);
+			auto it = m_client_opts.find(opt);
 			if (it != m_client_opts.end()) {
 				optVal = it->second;
 			}
@@ -218,22 +221,22 @@ namespace RestfulAPI
 			std::shared_ptr<std::string> data;
 			size_t pos;
 		};
-		size_t HeaderCallBack(char* buffer, size_t size, size_t nitems, void* data)
+		static size_t HeaderCallBack(char* buffer, size_t size, size_t nitems, void* data)
 		{
 			size_t numBytes = size * nitems;
-			WriteData *writeData = (WriteData*) data;
+			auto *writeData = (WriteData*) data;
 			writeData->data->append(buffer, numBytes);
 			writeData->pos += numBytes;
 			return numBytes;
 		}
-		size_t BodyCallBack(char* buffer, size_t size, size_t nitems, void* data)
+		static size_t BodyCallBack(char* buffer, size_t size, size_t nitems, void* data)
 		{
 			std::cout << "in body callback" << std::endl;
 			size_t numBytes = size * nitems;
 			std::cout << "Byte Syze: " << size << std::endl;
 			std::cout << "nItems: " << nitems << std::endl;
 			std::cout << "Numbytes: " << numBytes << std::endl;
-			WriteData *writeData = (WriteData*) data;
+			auto *writeData = (WriteData*) data;
 			std::cout << "Writing data";
 			writeData->data->append(buffer, numBytes);
 			std::cout << "Wrote: " << sizeof writeData->data << std::endl;

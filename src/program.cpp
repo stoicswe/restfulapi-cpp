@@ -1,48 +1,38 @@
+// Standard lib includes
 #include <iostream>
 #include <map>
 
+// Include external libs
 #include <plog/Log.h>
 #include <plog/Initializers/RollingFileInitializer.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
 
+// Including some core functions
+#include "core/corefunctions.h"
 #include <restfulapi.h>
 
-// Functions for processing the arguments passed to the program as values passed to specific flags
-char* getCmdOption(char** begin, char** end, const std::string& option, bool isFlag)
-{
-	char** itr = std::find(begin, end, option);
-	if (isFlag || (itr != end && ++itr != end))
-	{
-		return *itr;
-	}
-	return nullptr;
-}
-
-bool cmdOptionExists(char** begin, char** end, const std::string& option)
-{
-	return std::find(begin, end, option) != end;
-}
-
+using namespace RestfulAPI;
 
 int main(int argc, char** argv){
-
 	std::cout << "RestfulApi Test Application" << std::endl;
-
+    // Create the default logger for the entrypoint
 	plog::init(plog::verbose, "console.log", 10000, 25);
 	plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
 	plog::get()->addAppender(&consoleAppender);
-
+    // Get the available program arguments
 	char* help = getCmdOption(argv, argv + argc, "-h", true);
 	char* operation = getCmdOption(argv, argv + argc, "-o", false);
 	char* targetApi = getCmdOption(argv, argv + argc, "-u", false);
 	char* baseService = getCmdOption(argv, argv + argc, "-s", false);
 	char* fileToUpoad = getCmdOption(argv, argv + argc, "-f", false);
-
+    // sharedptr for dolhing the reference to the FILE once opened.
+    // If the desire is to upload the file to a URL, then this will be passed
+    // to the libcurl instance in the restAPI to be uploaded by libcurl.
 	std::shared_ptr<FILE> sourceFileToUpload;
-	std::string baseServiceStr = "http://127.0.0.1:8080";
+    // Default target endpoint.
 	if (targetApi) { PLOG(plog::info) << "TargetAPI: " + std::string(targetApi); }
-	if (baseService) { PLOG(plog::info) << "BaseService: " + std::string(baseService); baseServiceStr = std::string(baseService); }
+	if (baseService) { PLOG(plog::info) << "BaseService: " + std::string(baseService); }
 	if (help) 
 	{ 
 		std::cout
@@ -69,31 +59,31 @@ int main(int argc, char** argv){
 	}
 
     // Get the type of operation to be executed against the target endpoint
-    auto operationType = RestfulAPI::GetOperationEnum(std::string(operation));
+    auto operationType = GetOperationEnum(std::string(operation));
 
 	// init the rest client here and process the url request
 	PLOG(plog::debug) << "building the rest client";
-	RestfulAPI::RestApiClient client = RestfulAPI::RestApiClient(baseServiceStr);
-	client.SetOption(RestfulAPI::RESTCLIENTOPT_USER_AGENT, "testRestful/1.0");
-    client.SetOption(RestfulAPI::RESTCLIENTOPT_READ_BODY, "true");
-	client.SetOption(RestfulAPI::RESTCLIENTOPT_FOLLOW_REDIRECT, "true");
+	RestApiClient client = (baseService) ? RestApiClient::Instance(baseService) : RestApiClient::Instance();
+	client.SetOption(RESTCLIENTOPT_USER_AGENT, "testRestful/1.0");
+    client.SetOption(RESTCLIENTOPT_READ_BODY, "true");
+	client.SetOption(RESTCLIENTOPT_FOLLOW_REDIRECT, "true");
 	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER, "true");
 	//client.SetOption(RestfulAPI::RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST, "true");
-	RestfulAPI::HttpRequest request = RestfulAPI::HttpRequest("/");
-	request.SetHeader(RestfulAPI::HTTPHEADER_ACCEPTS, "*/*");
+	HttpRequest request = HttpRequest("/");
+	request.SetHeader(HTTPHEADER_ACCEPTS, "*/*");
 
 	RestfulAPI::ApiResponse response;
 	switch (operationType)
 	{
-	case RestfulAPI::HTTPOPERATION_HEAD:
+	case HTTPOPERATION_HEAD:
         PLOG(plog::debug) << "sending a HEAD request using client";
 		response = client.Head(std::string(targetApi));
 		break;
-	case RestfulAPI::HTTPOPERATION_GET:
+	case HTTPOPERATION_GET:
         PLOG(plog::debug) << "sending a GET request using client";
 		response = client.Get(std::string(targetApi));
 		break;
-	case RestfulAPI::HTTPOPERATION_PUT:
+	case HTTPOPERATION_PUT:
         PLOG(plog::debug) << "sending a PUT request using client";
         // This will give a warning of uninitialized, ignore, since it is in a CASE
 		struct stat dataInfo;
@@ -118,7 +108,7 @@ int main(int argc, char** argv){
 		fclose(sourceFileToUpload.get());
 	}
 
-	RestfulAPI::HttpStatus httpStatus = response.GetHttpStatus();
+	HttpStatus httpStatus = response.GetHttpStatus();
 	PLOG(plog::info) << "the http response status is: " + std::to_string(httpStatus.GetHttpStatusCode());
 	std::shared_ptr<std::string> responseHeaders = response.GetResponseHeaders();
 	if (responseHeaders)

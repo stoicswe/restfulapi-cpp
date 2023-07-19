@@ -2,7 +2,7 @@ set(executable_name bin)
 
 set(bin_source_files 
     program.cpp
-)
+        core/corefunctions.h)
 
 add_executable(${executable_name} ${bin_source_files})
 
