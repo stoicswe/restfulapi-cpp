@@ -1,9 +1,16 @@
+# OS Files
+.DS_Store
+
 # Ignore configs
 **/CMakeUserPresets.json
 
 # ignore the build folder
 x64
 **/build/**
+
+# Ignore the Cache and cmake files
+CMakeFiles
+CMakeCache.txt
 
 # Ignore Jetbrains Products local files
 .idea

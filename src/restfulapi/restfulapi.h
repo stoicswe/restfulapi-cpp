@@ -149,23 +149,23 @@ namespace RestfulAPI
 	private:
 		void SetOpts() 
 		{
-			PLOG(plog::debug) << "setting client options";
+			//PLOG(plog::debug) << "setting client options";
 			std::string usr_agent = FindOpt(RESTCLIENTOPT_USER_AGENT);
 			if (!usr_agent.empty()) 
 			{ 
-				PLOG(plog::debug) << "setting custom useragent";
-				curl_slist_append(m_header_struct, std::string("Agent: " + usr_agent).c_str()); 
+				//PLOG(plog::debug) << "setting custom useragent";
+				curl_slist_append(m_header_struct, std::string("Agent: " + usr_agent).c_str());
 			}
 			else
 			{
-				PLOG(plog::debug) << "setting default user agent";
+				//PLOG(plog::debug) << "setting default user agent";
 				curl_slist_append(m_header_struct, std::string("Agent: restfulapi/"+std::to_string(_VERSION)).c_str());
 			}
 
 			std::string read_header = FindOpt(RESTCLIENTOPT_READ_HEADERS);
 			if (!read_header.empty() && read_header == "true") 
 			{
-				PLOG(plog::debug) << "setting header read callback";
+				//PLOG(plog::debug) << "setting header read callback";
 				curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, &RestApiClient::HeaderCallBack);
 				RestApiClient::WriteData headerData = { m_response_headers, 0 };
 				curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerData);
@@ -174,7 +174,7 @@ namespace RestfulAPI
 			std::string read_body = FindOpt(RESTCLIENTOPT_READ_BODY);
 			if (!read_body.empty() && read_body == "true")
 			{
-				PLOG(plog::debug) << "setting body read callback";
+				//PLOG(plog::debug) << "setting body read callback";
 				curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &RestApiClient::BodyCallBack);
 				RestApiClient::WriteData bodyData = { m_response_body, 0 };
 				curl_easy_setopt(curl, CURLOPT_WRITEDATA, &bodyData);
@@ -183,21 +183,21 @@ namespace RestfulAPI
 			std::string follow_redirect = FindOpt(RESTCLIENTOPT_FOLLOW_REDIRECT);
 			if (!follow_redirect.empty() && follow_redirect == "true")
 			{
-				PLOG(plog::debug) << "setting redirect to true";
+				//PLOG(plog::debug) << "setting redirect to true";
 				curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1l);
 			}
 
 			std::string ssl_disable_verify_peer = FindOpt(RESTCLIENTOPT_SSL_DISABLE_VERIFY_PEER);
 			if (!ssl_disable_verify_peer.empty() && ssl_disable_verify_peer == "true")
 			{
-				PLOG(plog::debug) << "setting redirect to true";
+				//PLOG(plog::debug) << "setting redirect to true";
 				curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0l);
 			}
 
 			std::string ssl_disable_verify_host = FindOpt(RESTCLIENTOPT_SSL_DISABLE_VERIFY_HOST);
 			if (!ssl_disable_verify_host.empty() && ssl_disable_verify_host == "true")
 			{
-				PLOG(plog::debug) << "setting redirect to true";
+				//PLOG(plog::debug) << "setting redirect to true";
 				curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0l);
 			}
 		}

@@ -24,7 +24,8 @@ PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
 )
 
-target_link_libraries(${api_name} PRIVATE plog::plog CURL::libcurl)
+target_link_libraries(${api_name} PRIVATE spdlog::spdlog CURL::libcurl)
+#target_link_libraries(${api_name} PRIVATE CURL::libcurl)
 
 target_compile_features(${api_name} PUBLIC cxx_std_20)
 target_compile_options(${api_name} PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/MP>")

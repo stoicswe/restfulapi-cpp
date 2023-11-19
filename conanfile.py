@@ -1,11 +1,14 @@
 import os
-from conans import ConanFile, tools, CMake
-from conan.tools.cmake import CMakeToolchain
-from conan.tools.cmake import CMakeDeps
-from conans.errors import ConanException
+from conan import ConanFile
+from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake, cmake_layout
+from conan.tools.files import save, load
+from conan.tools.gnu import AutotoolsToolchain, AutotoolsDeps
+from conan.tools.microsoft import unix_path, VCVars, is_msvc
+from conan.errors import ConanInvalidConfiguration
+from conan.errors import ConanException
 
-class vsPractice(ConanFile):
-    name = "vs-practice"
+class restfulApi(ConanFile):
+    name = "restful-api"
     url = ""
     license = ""
     description = ""
@@ -14,15 +17,15 @@ class vsPractice(ConanFile):
 
     short_paths = True
 
-    export_cmake_namespace = "vs-practice"
+    export_cmake_namespace = "restful-api"
 
     settings = "os", "compiler", "build_type", "arch"
 
-    generators = ("cmake_find_package")
+    #generators = ("cmake_find_package")
     
     def requirements(self):
         self.requires("libcurl/8.1.2")
-        self.requires("plog/1.1.9")
+        self.requires("spdlog/1.12.0#c5fc262786548cbac34e6c38e16309a9")
     
     #def imports(self):
     #    super().imports()

@@ -1,12 +1,13 @@
 // Standard lib includes
 #include <iostream>
 #include <map>
+#include <sys/stat.h>
 
 // Include external libs
-#include <plog/Log.h>
-#include <plog/Initializers/RollingFileInitializer.h>
-#include <plog/Formatters/TxtFormatter.h>
-#include <plog/Appenders/ColorConsoleAppender.h>
+//#include <plog/Log.h>
+//#include <plog/Initializers/RollingFileInitializer.h>
+//#include <plog/Formatters/TxtFormatter.h>
+//#include <plog/Appenders/ColorConsoleAppender.h>
 
 // Including some core functions
 #include "core/corefunctions.h"
@@ -17,9 +18,9 @@ using namespace RestfulAPI;
 int main(int argc, char** argv){
 	std::cout << "RestfulApi Test Application" << std::endl;
     // Create the default logger for the entrypoint
-	plog::init(plog::verbose, "console.log", 10000, 25);
-	plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-	plog::get()->addAppender(&consoleAppender);
+	//plog::init(plog::verbose, "console.log", 10000, 25);
+	//plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
+	//plog::get()->addAppender(&consoleAppender);
     // Get the available program arguments
 	char* help = getCmdOption(argv, argv + argc, "-h", true);
 	char* operation = getCmdOption(argv, argv + argc, "-o", false);
@@ -31,9 +32,9 @@ int main(int argc, char** argv){
     // to the libcurl instance in the restAPI to be uploaded by libcurl.
 	std::shared_ptr<FILE> sourceFileToUpload;
     // Default target endpoint.
-	if (targetApi) { PLOG(plog::info) << "TargetAPI: " + std::string(targetApi); }
-	if (baseService) { PLOG(plog::info) << "BaseService: " + std::string(baseService); }
-	if (help) 
+	//if (targetApi) { PLOG(plog::info) << "TargetAPI: " + std::string(targetApi); }
+	//if (baseService) { PLOG(plog::info) << "BaseService: " + std::string(baseService); }
+	if (help)
 	{ 
 		std::cout
 			<< "usage: restfulapi_test [options] -u <target_api>" << std::endl
@@ -48,13 +49,13 @@ int main(int argc, char** argv){
 
 	if (!operation)
 	{
-		PLOG(plog::fatal) << "no operation entered. operation is required. See (-h) for details.";
+		//PLOG(plog::fatal) << "no operation entered. operation is required. See (-h) for details.";
 		return 1;
 	}
 
 	if (!targetApi)
 	{ 
-		PLOG(plog::fatal) << "no api target entered. api target is required. See (-h) for details."; 
+		//PLOG(plog::fatal) << "no api target entered. api target is required. See (-h) for details.";
 		return 1;
 	}
 
@@ -62,7 +63,7 @@ int main(int argc, char** argv){
     auto operationType = GetOperationEnum(std::string(operation));
 
 	// init the rest client here and process the url request
-	PLOG(plog::debug) << "building the rest client";
+	//PLOG(plog::debug) << "building the rest client";
 	RestApiClient client = (baseService) ? RestApiClient::Instance(baseService) : RestApiClient::Instance();
 	client.SetOption(RESTCLIENTOPT_USER_AGENT, "testRestful/1.0");
     client.SetOption(RESTCLIENTOPT_READ_BODY, "true");
@@ -76,15 +77,15 @@ int main(int argc, char** argv){
 	switch (operationType)
 	{
 	case HTTPOPERATION_HEAD:
-        PLOG(plog::debug) << "sending a HEAD request using client";
+        //PLOG(plog::debug) << "sending a HEAD request using client";
 		response = client.Head(std::string(targetApi));
 		break;
 	case HTTPOPERATION_GET:
-        PLOG(plog::debug) << "sending a GET request using client";
+        //PLOG(plog::debug) << "sending a GET request using client";
 		response = client.Get(std::string(targetApi));
 		break;
 	case HTTPOPERATION_PUT:
-        PLOG(plog::debug) << "sending a PUT request using client";
+        //PLOG(plog::debug) << "sending a PUT request using client";
         // This will give a warning of uninitialized, ignore, since it is in a CASE
 		struct stat dataInfo;
 
@@ -99,7 +100,7 @@ int main(int argc, char** argv){
 		response = client.Put(std::string(targetApi), sourceFileToUpload, dataInfo);
 		break;
 	default:
-		PLOG(plog::fatal) << "no operation is implemented. See (-h) for implemented operation details.";
+		//PLOG(plog::fatal) << "no operation is implemented. See (-h) for implemented operation details.";
 		return 1;
 	}
 
@@ -109,20 +110,20 @@ int main(int argc, char** argv){
 	}
 
 	HttpStatus httpStatus = response.GetHttpStatus();
-	PLOG(plog::info) << "the http response status is: " + std::to_string(httpStatus.GetHttpStatusCode());
+	//PLOG(plog::info) << "the http response status is: " + std::to_string(httpStatus.GetHttpStatusCode());
 	std::shared_ptr<std::string> responseHeaders = response.GetResponseHeaders();
 	if (responseHeaders)
 	{
         // Want to print the total bytes, so using sizeof()
-		PLOG(plog::info) << "the total response headers size (in bytes) from the rest client is: [" + std::to_string(sizeof(*responseHeaders)) + "]";
-		PLOG(plog::info) << "the response headers from the rest client is: [" + *responseHeaders + "]";
+		//PLOG(plog::info) << "the total response headers size (in bytes) from the rest client is: [" + std::to_string(sizeof(*responseHeaders)) + "]";
+		//PLOG(plog::info) << "the response headers from the rest client is: [" + *responseHeaders + "]";
 	}
 	std::shared_ptr<std::string> responseBody = response.GetResponseBody();
 	if (responseBody) 
 	{
         // Want to print the total bytes, so using sizeof()
-		PLOG(plog::info) << "the total response body size (in bytes) from the rest client is: [" + std::to_string(sizeof(*responseBody)) + "]";
-		PLOG(plog::info) << "the response body from the rest client is: [" + *responseBody + "]";
+		//PLOG(plog::info) << "the total response body size (in bytes) from the rest client is: [" + std::to_string(sizeof(*responseBody)) + "]";
+		//PLOG(plog::info) << "the response body from the rest client is: [" + *responseBody + "]";
 	}
 
 	return 0;

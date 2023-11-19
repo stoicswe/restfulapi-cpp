@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 project (
-    vspracticecpp
+    restfulapicpp
     VERSION 0.1
     DESCRIPTION "An example project for cpp code"
     LANGUAGES CXX
@@ -22,8 +22,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
 
-find_package(plog REQUIRED)
 find_package(CURL REQUIRED)
+find_package(spdlog REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(src/restfulapi)
