@@ -2,7 +2,7 @@
 #include <curl/curl.h>
 #include <sys/stat.h>
 
-#include <restfulapi.h>
+#include <restfulapi.hpp>
 
 using namespace RestfulAPI;
 

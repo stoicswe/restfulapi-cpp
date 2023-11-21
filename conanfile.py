@@ -25,7 +25,8 @@ class restfulApi(ConanFile):
     
     def requirements(self):
         self.requires("libcurl/8.1.2")
-        self.requires("spdlog/1.12.0#c5fc262786548cbac34e6c38e16309a9")
+        # Cannot seem to pull down
+        #self.requires("spdlog/1.12.0")
     
     #def imports(self):
     #    super().imports()

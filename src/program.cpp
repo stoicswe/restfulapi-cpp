@@ -10,8 +10,8 @@
 //#include <plog/Appenders/ColorConsoleAppender.h>
 
 // Including some core functions
-#include "core/corefunctions.h"
-#include <restfulapi.h>
+#include "core/corefunctions.hpp"
+#include <restfulapi.hpp>
 
 using namespace RestfulAPI;
 

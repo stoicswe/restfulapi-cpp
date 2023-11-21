@@ -23,7 +23,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 find_package(CURL REQUIRED)
-find_package(spdlog REQUIRED)
+# Cannot seem to pull down
+#find_package(spdlog REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(src/restfulapi)
+add_subdirectory(src/logger)
