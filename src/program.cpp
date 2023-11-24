@@ -11,6 +11,8 @@
 
 // Including some core functions
 #include "core/corefunctions.hpp"
+#include "logger/simplelogger.hpp"
+#include "logger/loggertypes.hpp"
 #include <restfulapi.hpp>
 
 using namespace RestfulAPI;
@@ -18,9 +20,14 @@ using namespace RestfulAPI;
 int main(int argc, char** argv){
 	std::cout << "RestfulApi Test Application" << std::endl;
     // Create the default logger for the entrypoint
-	//plog::init(plog::verbose, "console.log", 10000, 25);
-	//plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-	//plog::get()->addAppender(&consoleAppender);
+    simplelogger::LoggerConfig lconf = new simplelogger::LoggerConfig();
+    // Buil;d the logger configuration
+    lconf.setMaxLogLevel(simplelogger::LogLevel.INFO);
+    // Set the
+    lconf.setDateTimeFormat("%Y-%m-%d %H:%M:%OS");
+    simplelogger::LOG_INIT(lconf);
+    std::shared_ptr<simplelogger::ConsoleLogger> clogger = std::make_shared<>();
+    simplelogger::LOG_ADD_AGGREGATOR(clogger);
     // Get the available program arguments
 	char* help = getCmdOption(argv, argv + argc, "-h", true);
 	char* operation = getCmdOption(argv, argv + argc, "-o", false);
@@ -32,8 +39,8 @@ int main(int argc, char** argv){
     // to the libcurl instance in the restAPI to be uploaded by libcurl.
 	std::shared_ptr<FILE> sourceFileToUpload;
     // Default target endpoint.
-	//if (targetApi) { PLOG(plog::info) << "TargetAPI: " + std::string(targetApi); }
-	//if (baseService) { PLOG(plog::info) << "BaseService: " + std::string(baseService); }
+	if (targetApi) { LOG(LogLevel.INFO) << "TargetAPI: " + std::string(targetApi); }
+	if (baseService) { LOG(LogLevel.INFO) << "BaseService: " + std::string(baseService); }
 	if (help)
 	{ 
 		std::cout

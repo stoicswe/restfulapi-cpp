@@ -1,10 +1,13 @@
 set(api_name simplelogger)
 
 set(lib_header_files
+    loggerconfig.hpp
+    loggertypes.hpp
     simplelogger.hpp
 )
 
 set(lib_source_files 
+    loggerconfig.cpp
     simplelogger.cpp
 )
 
