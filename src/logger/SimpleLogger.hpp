@@ -43,7 +43,7 @@ namespace simplelogger {
         void logLvl(LogLevel& lvl) {
             clvl = lvl;
         }
-        void operator<<(std::string& cont) {
+        void operator<<(std::string cont) {
             for(LoggerAggregator* logger : *aggregators) {
                 logger->append(LogRecord(clvl, cont));
             }

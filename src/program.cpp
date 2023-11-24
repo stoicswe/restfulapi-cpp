@@ -1,5 +1,6 @@
 // Standard lib includes
 #include <iostream>
+#include <string>
 #include <map>
 #include <sys/stat.h>
 
@@ -16,18 +17,21 @@
 #include <restfulapi.hpp>
 
 using namespace RestfulAPI;
+using namespace simplelogger;
+
+static std::string dformat = "%Y-%m-%d %H:%M:%OS";
 
 int main(int argc, char** argv){
 	std::cout << "RestfulApi Test Application" << std::endl;
     // Create the default logger for the entrypoint
-    simplelogger::LoggerConfig lconf = new simplelogger::LoggerConfig();
+    LoggerConfig lconf = LoggerConfig();
     // Buil;d the logger configuration
-    lconf.setMaxLogLevel(simplelogger::LogLevel.INFO);
+    lconf.setMaxLogLevel(INFO);
     // Set the
-    lconf.setDateTimeFormat("%Y-%m-%d %H:%M:%OS");
-    simplelogger::LOG_INIT(lconf);
-    std::shared_ptr<simplelogger::ConsoleLogger> clogger = std::make_shared<>();
-    simplelogger::LOG_ADD_AGGREGATOR(clogger);
+    lconf.setDateTimeFormat(dformat);
+    LOG_INIT(lconf);
+    std::shared_ptr<ConsoleLogger> clogger = std::make_shared<ConsoleLogger>();
+    LOG_ADD_AGGREGATOR(reinterpret_cast<LoggerAggregator*>(&clogger));
     // Get the available program arguments
 	char* help = getCmdOption(argv, argv + argc, "-h", true);
 	char* operation = getCmdOption(argv, argv + argc, "-o", false);
@@ -39,8 +43,8 @@ int main(int argc, char** argv){
     // to the libcurl instance in the restAPI to be uploaded by libcurl.
 	std::shared_ptr<FILE> sourceFileToUpload;
     // Default target endpoint.
-	if (targetApi) { LOG(LogLevel.INFO) << "TargetAPI: " + std::string(targetApi); }
-	if (baseService) { LOG(LogLevel.INFO) << "BaseService: " + std::string(baseService); }
+	if (targetApi) { LOG(INFO) << "TargetAPI: " + std::string(targetApi); }
+	if (baseService) { LOG(INFO) << "BaseService: " + std::string(baseService); }
 	if (help)
 	{ 
 		std::cout
@@ -56,13 +60,13 @@ int main(int argc, char** argv){
 
 	if (!operation)
 	{
-		//PLOG(plog::fatal) << "no operation entered. operation is required. See (-h) for details.";
+		LOG(ERROR) << "no operation entered. operation is required. See (-h) for details.";
 		return 1;
 	}
 
 	if (!targetApi)
 	{ 
-		//PLOG(plog::fatal) << "no api target entered. api target is required. See (-h) for details.";
+        LOG(ERROR) << "no api target entered. api target is required. See (-h) for details.";
 		return 1;
 	}
 

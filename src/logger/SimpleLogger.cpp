@@ -4,6 +4,8 @@
 //
 //  Created by Nathaniel Knudsen on 11/20/23.
 //
+#include <iostream>
+#include <string>
 
 #include "simplelogger.hpp"
 
@@ -21,6 +23,7 @@ void ConsoleLogger::flush() {
         // TODO: Flesh out the flush func
         // this will be called when the logger is destroyed or
         // if called sooner for some reason.
+        std::cout << r.toString(m_config.getDateTimeFormat());
     }
     // TODO: Free lock
 }
