@@ -19,6 +19,10 @@ namespace simplelogger {
         
         friend class Logger;
         
+    public:
+        LoggerAggregator();
+        virtual ~LoggerAggregator();
+        
     protected:
         virtual void append(LogRecord record);
         virtual void flush();
@@ -64,13 +68,14 @@ namespace simplelogger {
     // simple logger within a project.
     static std::shared_ptr<Logger> loggerInstance = nullptr;
 
-    class ConsoleLogger : LoggerAggregator {
+    class ConsoleLogger : public LoggerAggregator {
     public:
-        ConsoleLogger() {
+        ConsoleLogger() : LoggerAggregator() {
             records = std::make_shared<std::vector<LogRecord>>();
             m_config = loggerInstance->getLogConfig();
         }
-        ~ConsoleLogger(){}
+        ~ConsoleLogger() {
+        }
         void append(LogRecord record) override;
         void flush() override;
     private:
